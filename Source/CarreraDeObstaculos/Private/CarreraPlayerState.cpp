@@ -2,6 +2,7 @@
 
 
 #include "Public/CarreraPlayerState.h"
+#include "CarreraPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
 ACarreraPlayerState::ACarreraPlayerState()
@@ -30,5 +31,11 @@ void ACarreraPlayerState::SumarPuntos(int32 PuntosASumar)
 
 void ACarreraPlayerState::OnRep_PuntajeIndividual()
 {
+	ACarreraPlayerController* PController = Cast<ACarreraPlayerController>(GetPlayerController());
+	if (PController)
+	{
+		PController->ActualizarPuntajeHUD(PuntajeIndividual);
+	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green ,"Puntaje Actualizado. Nuevo Total: %d"+ PuntajeIndividual);
 }

@@ -11,6 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "CarreraDeObstaculos.h"
+#include "CarreraGameState.h"
+#include "Net/UnrealNetwork.h"
 
 ACarreraDeObstaculosCharacter::ACarreraDeObstaculosCharacter()
 {
@@ -50,6 +52,116 @@ ACarreraDeObstaculosCharacter::ACarreraDeObstaculosCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void ACarreraDeObstaculosCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ACarreraDeObstaculosCharacter, bEstaAgarrado);
+}
+
+void ACarreraDeObstaculosCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (HasAuthority())
+	{
+		UltimoCheckpoint = GetActorLocation();
+	}
+	
+	VelocidadOriginal = GetCharacterMovement()->MaxWalkSpeed;
+	bEstaAgarrado = false;
+}
+
+void ACarreraDeObstaculosCharacter::Jump()
+{
+	ACarreraGameState* MiGameState = GetWorld()->GetGameState<ACarreraGameState>();
+	if (MiGameState&&!MiGameState->PuedeMoverse())return;
+	if (bEstaAgarrado)return;
+	Super::Jump();
+}
+
+void ACarreraDeObstaculosCharacter::IntentarAgarrar()
+{
+	ACarreraGameState* MiGameState = GetWorld()->GetGameState<ACarreraGameState>();
+	if (MiGameState&&!MiGameState->PuedeMoverse())return;
+	if (bPuedeAgarrar && !bEstaAgarrado)
+	{
+		Server_Agarrar();
+	}
+}
+
+void ACarreraDeObstaculosCharacter::Server_Agarrar_Implementation()
+{
+	if (!bPuedeAgarrar)return;
+	
+	bPuedeAgarrar = false;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_CooldownAgarre, this, &ACarreraDeObstaculosCharacter::ResetearCooldownAgarre, CooldownAgarre, false);
+	
+	FVector StartLocation= GetActorLocation();
+	FVector EndLocation= StartLocation + (GetActorForwardVector()*100.0f);
+	FHitResult HitResult;
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(40.0f);
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	
+	bool bHit = GetWorld()->SweepSingleByChannel(HitResult,StartLocation,EndLocation,FQuat::Identity,ECC_Pawn,Sphere, QueryParams);
+	
+	if (bHit)
+	{
+		ACarreraDeObstaculosCharacter* OtroJugador = Cast<ACarreraDeObstaculosCharacter>(HitResult.GetActor());
+		if (OtroJugador)
+		{
+			OtroJugador->AplicarEfectoAgarre(DuracionAgarre);
+		}
+	}
+	Multicast_EfectoAgarre();
+}
+
+void ACarreraDeObstaculosCharacter::Multicast_EfectoAgarre_Implementation()
+{
+	
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red ,"Efecto De Agarre a otro Jugador");
+}
+
+void ACarreraDeObstaculosCharacter::ResetearCooldownAgarre()
+{
+	bPuedeAgarrar=true;
+}
+
+void ACarreraDeObstaculosCharacter::AplicarEfectoAgarre(float Duracion)
+{
+	if (HasAuthority())
+	{
+		bEstaAgarrado=true;
+		
+		GetCharacterMovement()->MaxWalkSpeed=VelocidadOriginal*0.2f;
+		OnRep_IsGrabbed();
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_Liberacion,this, &ACarreraDeObstaculosCharacter::FinalizarAgarre,DuracionAgarre, false);
+		
+	}
+}
+
+void ACarreraDeObstaculosCharacter::FinalizarAgarre()
+{
+	if (HasAuthority())
+	{
+		bEstaAgarrado=false;
+		GetCharacterMovement()->MaxWalkSpeed=VelocidadOriginal;
+		OnRep_IsGrabbed();
+	}
+}
+
+void ACarreraDeObstaculosCharacter::OnRep_IsGrabbed()
+{
+	if (bEstaAgarrado)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue ,"Jugador Atrapado - Reproducir Animacion de Forcejeo");
+	}else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue ,"Jugador Liberado");
+	}
 }
 
 void ACarreraDeObstaculosCharacter::ResetearCooldownEmpuje()
@@ -141,6 +253,8 @@ void ACarreraDeObstaculosCharacter::DoJumpEnd()
 
 void ACarreraDeObstaculosCharacter::IntentarEmpujar()
 {
+	ACarreraGameState* MiGameState = GetWorld()->GetGameState<ACarreraGameState>();
+	if (MiGameState&&!MiGameState->PuedeMoverse())return;
 	if (bPuedeEmpujar)
 	{
 		Server_Empujar();
@@ -169,14 +283,6 @@ void ACarreraDeObstaculosCharacter::EjecutarRespawn()
 	}
 }
 
-void ACarreraDeObstaculosCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	if (HasAuthority())
-	{
-		UltimoCheckpoint = GetActorLocation();
-	}
-}
 
 void ACarreraDeObstaculosCharacter::Client_NotificarRespawn_Implementation()
 {
@@ -193,7 +299,7 @@ void ACarreraDeObstaculosCharacter::Server_Empujar_Implementation()
 	if (!bPuedeEmpujar) return;
 	
 	bPuedeEmpujar = false;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_Cooldown, this, &ACarreraDeObstaculosCharacter::ResetearCooldownEmpuje, CooldownEmpuje, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_CooldownEmpuje, this, &ACarreraDeObstaculosCharacter::ResetearCooldownEmpuje, CooldownEmpuje, false);
 	
 	FVector StartLocation = GetActorLocation();
 	FVector EndLocation = StartLocation + (GetActorForwardVector() * 150.0f);

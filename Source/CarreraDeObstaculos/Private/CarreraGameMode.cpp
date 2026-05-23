@@ -10,6 +10,29 @@ ACarreraGameMode::ACarreraGameMode()
 	GameStateClass=ACarreraGameState::StaticClass();
 }
 
+void ACarreraGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	ACarreraGameState* MiGameState = GetGameState<ACarreraGameState>();
+	if (MiGameState)
+	{
+		MiGameState->SetEstadoCarrera(ECarreraEstado::Esperando);
+		
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_InicioCarrera, this,&ACarreraGameMode::IniciarCarrera, 5.0f, false);
+		
+	}
+}
+
+void ACarreraGameMode::IniciarCarrera()
+{
+	ACarreraGameState* MiGameState = GetGameState<ACarreraGameState>();
+	if (MiGameState)
+	{
+		MiGameState->SetEstadoCarrera(ECarreraEstado::Jugando);
+	}
+}
+
 void ACarreraGameMode::RegistrarLlegadaJugador(AController* JugadorController)
 {
 	ACarreraGameState* MiGameState = GetGameState<ACarreraGameState>();

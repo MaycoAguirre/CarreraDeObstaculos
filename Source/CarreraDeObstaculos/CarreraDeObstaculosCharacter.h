@@ -52,13 +52,40 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 	
+	UFUNCTION(BlueprintCallable, Category="Mecanicas")
+	void IntentarAgarrar();
+	
+	UFUNCTION(BlueprintCallable, Category="Mecanicas")
 	void IntentarEmpujar();
 	
 	UFUNCTION(Server, Reliable)
 	void Server_Empujar();
 	
+	UFUNCTION(Server, Reliable)
+	void Server_Agarrar();
+	
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_EfectoAgarre();
+	
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_EfectoEmpuje();
+	
+	UPROPERTY(ReplicatedUsing="OnRep_IsGrabbed", BlueprintReadOnly, Category="Estado")
+	bool bEstaAgarrado;
+	
+	UFUNCTION()
+	void OnRep_IsGrabbed();
+	
+	UFUNCTION(BlueprintCallable, Category="Efectos")
+	void AplicarEfectoAgarre(float Duracion);
+	
+	virtual void Jump() override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mecanicas")
+	float CooldownAgarre = 3.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mecanicas")
+	float DuracionAgarre = 1.5f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mecanicas")
 	float CooldownEmpuje = 2.0f;
@@ -84,10 +111,19 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	
+	bool bPuedeAgarrar = true;
+	FTimerHandle TimerHandle_CooldownAgarre;
+	FTimerHandle TimerHandle_Liberacion;
+	
+	float VelocidadOriginal;
+	
+	void ResetearCooldownAgarre();
+	void FinalizarAgarre();
+	
 	FVector UltimoCheckpoint;
 
 	bool bPuedeEmpujar = true;
-	FTimerHandle TimerHandle_Cooldown;
+	FTimerHandle TimerHandle_CooldownEmpuje;
 	
 	void ResetearCooldownEmpuje();
 	

@@ -20,5 +20,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Logica")
 	void RegistrarLlegadaJugador(AController* JugadorController);
 	
+protected:
+	virtual void BeginPlay() override;
 	
+private:
+	FTimerHandle TimerHandle_InicioCarrera;
+	void IniciarCarrera();
 };
