@@ -2,6 +2,7 @@
 
 #include "Public/CarreraGameState.h"
 
+#include "CarreraGameMode.h"
 #include "CarreraPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
@@ -62,6 +63,7 @@ void ACarreraGameState::DisminuirTiempo()
 	else
 	{
 		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Reloj);
+		GetWorld()->GetAuthGameMode<ACarreraGameMode>()->FinalizarCarrera();
 	}
 }
 

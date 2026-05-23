@@ -32,4 +32,10 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ActualizarTiempoHUD(int32 NuevoTiempo);
+	
+	UFUNCTION(Client, Reliable)
+	void Client_MostrarPantallaFin(bool bEsGanador);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void MostrarFinDeJuegoHUD(bool bEsGanador);
 };

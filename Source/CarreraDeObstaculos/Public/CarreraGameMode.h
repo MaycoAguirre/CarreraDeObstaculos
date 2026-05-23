@@ -20,6 +20,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Logica")
 	void RegistrarLlegadaJugador(AController* JugadorController);
 	
+	void FinalizarCarrera();
+	
 protected:
 	virtual void BeginPlay() override;
 	

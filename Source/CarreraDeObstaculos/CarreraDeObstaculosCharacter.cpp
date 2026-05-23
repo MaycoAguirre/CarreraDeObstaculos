@@ -112,7 +112,7 @@ void ACarreraDeObstaculosCharacter::Server_Agarrar_Implementation()
 		ACarreraDeObstaculosCharacter* OtroJugador = Cast<ACarreraDeObstaculosCharacter>(HitResult.GetActor());
 		if (OtroJugador)
 		{
-			OtroJugador->AplicarEfectoAgarre(DuracionAgarre);
+			OtroJugador->AplicarEfectoAgarre(this, DuracionAgarre);
 		}
 	}
 	Multicast_EfectoAgarre();
@@ -130,13 +130,21 @@ void ACarreraDeObstaculosCharacter::ResetearCooldownAgarre()
 	bPuedeAgarrar=true;
 }
 
-void ACarreraDeObstaculosCharacter::AplicarEfectoAgarre(float Duracion)
+void ACarreraDeObstaculosCharacter::AplicarEfectoAgarre(ACarreraDeObstaculosCharacter* Atacante, float Duracion)
 {
 	if (HasAuthority())
 	{
 		bEstaAgarrado=true;
 		
-		GetCharacterMovement()->MaxWalkSpeed=VelocidadOriginal*0.2f;
+		GetCharacterMovement()->SetMovementMode(MOVE_None);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget,EAttachmentRule::KeepWorld,EAttachmentRule::KeepWorld, false);
+		
+		AttachToActor(Atacante,AttachRules);
+		
+		SetActorRelativeLocation(FVector(70.0f,0.0f,0.0f));
+		
 		OnRep_IsGrabbed();
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_Liberacion,this, &ACarreraDeObstaculosCharacter::FinalizarAgarre,DuracionAgarre, false);
 		
@@ -148,7 +156,13 @@ void ACarreraDeObstaculosCharacter::FinalizarAgarre()
 	if (HasAuthority())
 	{
 		bEstaAgarrado=false;
-		GetCharacterMovement()->MaxWalkSpeed=VelocidadOriginal;
+		
+		FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, false);
+		DetachFromActor(DetachRules);
+		
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		
 		OnRep_IsGrabbed();
 	}
 }

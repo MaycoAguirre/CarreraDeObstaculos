@@ -77,7 +77,7 @@ public:
 	void OnRep_IsGrabbed();
 	
 	UFUNCTION(BlueprintCallable, Category="Efectos")
-	void AplicarEfectoAgarre(float Duracion);
+	void AplicarEfectoAgarre(ACarreraDeObstaculosCharacter* Atacante, float Duracion);
 	
 	virtual void Jump() override;
 	
@@ -99,6 +99,8 @@ public:
 	
 	UFUNCTION(Client, Reliable)
 	void Client_NotificarRespawn();
+	
+	
 	
 	
 

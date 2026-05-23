@@ -2,6 +2,8 @@
 
 
 #include "Public/CarreraGameMode.h"
+
+#include "CarreraPlayerController.h"
 #include "Public/CarreraGameState.h"
 #include "Public/CarreraPlayerState.h"
 
@@ -49,6 +51,40 @@ void ACarreraGameMode::RegistrarLlegadaJugador(AController* JugadorController)
 		if (PS)
 		{
 			PS->SumarPuntos(PuntosOtorgados);
+		}
+	}
+}
+
+void ACarreraGameMode::FinalizarCarrera()
+{
+	ACarreraGameState* MiGameState = GetGameState<ACarreraGameState>();
+	if (!MiGameState)return;
+	
+	MiGameState->SetEstadoCarrera(ECarreraEstado::Terminado);
+	
+	int32 PuntajeMaximo = -1;
+	ACarreraPlayerState* JugadorGanador = nullptr;
+
+	for (APlayerState*PS : MiGameState->PlayerArray)
+	{
+		ACarreraPlayerState*CarreraPS = Cast<ACarreraPlayerState>(PS);
+		if (CarreraPS)
+		{
+			if (CarreraPS->PuntajeIndividual>PuntajeMaximo)
+			{
+				PuntajeMaximo=CarreraPS->PuntajeIndividual;
+				JugadorGanador=CarreraPS;
+			}
+		}
+	}
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		ACarreraPlayerController*PC = Cast<ACarreraPlayerController>(It->Get());
+		if (PC)
+		{
+			bool bGano = (PC->PlayerState==JugadorGanador);
+			
+			PC->Client_MostrarPantallaFin(bGano);
 		}
 	}
 }

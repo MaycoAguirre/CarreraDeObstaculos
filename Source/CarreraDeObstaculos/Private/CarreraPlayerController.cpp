@@ -18,3 +18,11 @@ void ACarreraPlayerController::BeginPlay()
 		}
 	}
 }
+
+void ACarreraPlayerController::Client_MostrarPantallaFin_Implementation(bool bEsGanador)
+{
+	MostrarFinDeJuegoHUD(bEsGanador);
+	
+	bShowMouseCursor = true;
+	SetInputMode(FInputModeUIOnly());
+}
