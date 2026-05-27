@@ -49,6 +49,9 @@ public:
 	
 	FTimerHandle TimerHandle_Reloj;
 	void DisminuirTiempo();
+	
+	UFUNCTION(BlueprintCallable, Category="UI")
+	TArray<APlayerState*> GetJugadoresOrdenadosPorDistancia();
 
 protected: 
 	virtual void BeginPlay() override;

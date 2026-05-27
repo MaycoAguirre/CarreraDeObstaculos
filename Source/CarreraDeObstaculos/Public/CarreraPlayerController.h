@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ActualizarTiempoHUD(int32 NuevoTiempo);
 	
+	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable, Category = "UI")
+	void ActualizarEstadoHUD(ECarreraEstado NuevoEstado);
+	
 	UFUNCTION(Client, Reliable)
 	void Client_MostrarPantallaFin(bool bEsGanador);
 	

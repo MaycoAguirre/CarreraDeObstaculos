@@ -35,7 +35,7 @@ void ACarreraPlayerState::OnRep_PuntajeIndividual()
 	if (PController)
 	{
 		PController->ActualizarPuntajeHUD(PuntajeIndividual);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green ,"Puntaje Actualizado. Nuevo Total: %d"+ PuntajeIndividual);
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green ,"Puntaje Actualizado. Nuevo Total: %d"+ PuntajeIndividual);
 }
