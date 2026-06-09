@@ -28,4 +28,7 @@ protected:
 private:
 	FTimerHandle TimerHandle_InicioCarrera;
 	void IniciarCarrera();
+	
+	//Lista de jugadores que cruzaron la meta
+	TArray<AController*> JugadoresQueLlegaron;
 };

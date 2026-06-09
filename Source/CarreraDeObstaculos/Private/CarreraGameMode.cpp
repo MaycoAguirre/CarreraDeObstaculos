@@ -41,16 +41,28 @@ void ACarreraGameMode::RegistrarLlegadaJugador(AController* JugadorController)
 	
 	if (MiGameState && JugadorController)
 	{
-		MiGameState->JugadoresLlegados++;
-		
-		int32 PuntosOtorgados = 10;
-		if (MiGameState->JugadoresLlegados == 1)PuntosOtorgados = 100;
-		else if (MiGameState->JugadoresLlegados == 2)PuntosOtorgados = 50;
-		else if (MiGameState->JugadoresLlegados== 3)PuntosOtorgados = 20;
-		ACarreraPlayerState* PS = JugadorController->GetPlayerState<ACarreraPlayerState>();
-		if (PS)
+		if (!JugadoresQueLlegaron.Contains(JugadorController))
 		{
-			PS->SumarPuntos(PuntosOtorgados);
+			JugadoresQueLlegaron.Add(JugadorController);
+			MiGameState->JugadoresLlegados = JugadoresQueLlegaron.Num();//Actualizamos la Cantidad
+		
+			//Definimos el mensaje segun el puesto
+			FString MensajePuesto;
+			if (JugadoresQueLlegaron.Num()==1)MensajePuesto=TEXT("¡Has Ganado - Primer Puesto!");
+			else if (JugadoresQueLlegaron.Num()==2)MensajePuesto = TEXT("Segundo Puesto");
+			else if (JugadoresQueLlegaron.Num()==3)MensajePuesto = TEXT("Tercer Puesto");
+			else MensajePuesto = TEXT("Has Finalizado");
+			
+			//Le mandamos el mensaje solo a este jugador
+			ACarreraPlayerController* PC = Cast<ACarreraPlayerController>(JugadorController);
+			if (PC)
+			{
+				PC->Client_MostrarResultado(MensajePuesto);
+			}
+			if (JugadoresQueLlegaron.Num()>= GetNumPlayers())
+			{
+				FinalizarCarrera();
+			}
 		}
 	}
 }
@@ -58,33 +70,19 @@ void ACarreraGameMode::RegistrarLlegadaJugador(AController* JugadorController)
 void ACarreraGameMode::FinalizarCarrera()
 {
 	ACarreraGameState* MiGameState = GetGameState<ACarreraGameState>();
-	if (!MiGameState)return;
-	
-	MiGameState->SetEstadoCarrera(ECarreraEstado::Terminado);
-	
-	int32 PuntajeMaximo = -1;
-	ACarreraPlayerState* JugadorGanador = nullptr;
-
-	for (APlayerState*PS : MiGameState->PlayerArray)
+	if (MiGameState)
 	{
-		ACarreraPlayerState*CarreraPS = Cast<ACarreraPlayerState>(PS);
-		if (CarreraPS)
-		{
-			if (CarreraPS->PuntajeIndividual>PuntajeMaximo)
-			{
-				PuntajeMaximo=CarreraPS->PuntajeIndividual;
-				JugadorGanador=CarreraPS;
-			}
-		}
+		MiGameState->SetEstadoCarrera(ECarreraEstado::Terminado);
 	}
+	//Recorremos a todos los jugadores de la partida
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		ACarreraPlayerController*PC = Cast<ACarreraPlayerController>(It->Get());
-		if (PC)
+		ACarreraPlayerController* PC = Cast<ACarreraPlayerController>(It->Get());
+		
+		//Si el jugador no esta en la lista de los jugadores que llegaron, significa que se le acabo el tiempo
+		if (PC && !JugadoresQueLlegaron.Contains(PC))
 		{
-			bool bGano = (PC->PlayerState==JugadorGanador);
-			
-			PC->Client_MostrarPantallaFin(bGano);
+			PC->Client_MostrarResultado(TEXT("Tiempo Terminado"));
 		}
 	}
 }

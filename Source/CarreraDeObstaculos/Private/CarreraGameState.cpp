@@ -42,7 +42,7 @@ void ACarreraGameState::SetEstadoCarrera(ECarreraEstado NuevoEstado)
 		{
 			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Reloj);
 		}
-		
+		OnRep_EstadoActual();
 		OnRep_TiempoRestante();
 	}
 }
@@ -66,16 +66,19 @@ void ACarreraGameState::BeginPlay()
 
 void ACarreraGameState::DisminuirTiempo()
 {
-	if (TiempoRestante > 0)
+	if (HasAuthority())
 	{
-		TiempoRestante--;
+		if (TiempoRestante > 0)
+		{
+			TiempoRestante--;
 		
-		OnRep_TiempoRestante();
-	}
-	else
-	{
-		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Reloj);
-		GetWorld()->GetAuthGameMode<ACarreraGameMode>()->FinalizarCarrera();
+			OnRep_TiempoRestante();
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Reloj);
+			GetWorld()->GetAuthGameMode<ACarreraGameMode>()->FinalizarCarrera();
+		}
 	}
 }
 

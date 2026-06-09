@@ -21,7 +21,7 @@ public class CarreraDeObstaculos : ModuleRules
 			"Slate"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "OnlineSubsystem", "OnlineSubsystemUtils" });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"CarreraDeObstaculos",

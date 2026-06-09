@@ -37,8 +37,8 @@ public:
 	void ActualizarEstadoHUD(ECarreraEstado NuevoEstado);
 	
 	UFUNCTION(Client, Reliable)
-	void Client_MostrarPantallaFin(bool bEsGanador);
+	void Client_MostrarResultado(const FString& NuevoResultado);
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
-	void MostrarFinDeJuegoHUD(bool bEsGanador);
+	void MostrarFinDeJuegoHUD(const FString& Mensaje);
 };

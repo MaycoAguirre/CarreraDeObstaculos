@@ -19,10 +19,12 @@ void ACarreraPlayerController::BeginPlay()
 	}
 }
 
-void ACarreraPlayerController::Client_MostrarPantallaFin_Implementation(bool bEsGanador)
+void ACarreraPlayerController::Client_MostrarResultado_Implementation(const FString& MensajeResultado)
 {
-	MostrarFinDeJuegoHUD(bEsGanador);
 	
+	SetIgnoreMoveInput(true);
 	bShowMouseCursor = true;
 	SetInputMode(FInputModeUIOnly());
+	
+	MostrarFinDeJuegoHUD(MensajeResultado);
 }
