@@ -16,6 +16,9 @@ void ACarreraPlayerState::GetLifetimeReplicatedProps(TArray<class FLifetimePrope
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ACarreraPlayerState, PuntajeIndividual);
+	DOREPLIFETIME(ACarreraPlayerState, FinalPosition);
+	DOREPLIFETIME(ACarreraPlayerState, FinishTime);
+	DOREPLIFETIME(ACarreraPlayerState, bFinishedRace);
 	
 }
 
@@ -29,6 +32,14 @@ void ACarreraPlayerState::SumarPuntos(int32 PuntosASumar)
 	}
 }
 
+void ACarreraPlayerState::OnRep_FinishedRace()
+{
+	if (bFinishedRace)
+	{
+		MostrarPantallaResultado();
+	}
+}
+
 void ACarreraPlayerState::OnRep_PuntajeIndividual()
 {
 	ACarreraPlayerController* PController = Cast<ACarreraPlayerController>(GetPlayerController());
@@ -39,3 +50,4 @@ void ACarreraPlayerState::OnRep_PuntajeIndividual()
 	}
 	
 }
+

@@ -29,6 +29,8 @@ private:
 	FTimerHandle TimerHandle_InicioCarrera;
 	void IniciarCarrera();
 	
+	void ActualizarCuentaRegresiva();
+	
 	//Lista de jugadores que cruzaron la meta
 	TArray<AController*> JugadoresQueLlegaron;
 };

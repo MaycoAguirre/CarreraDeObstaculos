@@ -27,4 +27,19 @@ public:
 	
 	void SumarPuntos(int32 PuntosASumar);
 	
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Carrera")
+	int32 FinalPosition = 0;
+	
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Carrera")
+	float FinishTime = 0.0f;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_FinishedRace, BlueprintReadOnly, Category = "Carrera")
+	bool bFinishedRace = false;
+	
+	UFUNCTION()
+	void OnRep_FinishedRace();
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void MostrarPantallaResultado();
+	
 };

@@ -21,7 +21,9 @@ void ACarreraGameMode::BeginPlay()
 	{
 		MiGameState->SetEstadoCarrera(ECarreraEstado::Esperando);
 		
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_InicioCarrera, this,&ACarreraGameMode::IniciarCarrera, 5.0f, false);
+		MiGameState->ConteoRegresivo = 3;
+		
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_InicioCarrera, this,&ACarreraGameMode::ActualizarCuentaRegresiva, 1.0f, true);
 		
 	}
 }
@@ -32,6 +34,22 @@ void ACarreraGameMode::IniciarCarrera()
 	if (MiGameState)
 	{
 		MiGameState->SetEstadoCarrera(ECarreraEstado::Jugando);
+	}
+}
+
+void ACarreraGameMode::ActualizarCuentaRegresiva()
+{
+	ACarreraGameState*MiGameState = GetGameState<ACarreraGameState>();
+	if (MiGameState)
+	{
+		MiGameState->ConteoRegresivo--;
+		
+		if (MiGameState->ConteoRegresivo <= 0)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_InicioCarrera);
+			
+			IniciarCarrera();
+		}
 	}
 }
 
@@ -46,6 +64,18 @@ void ACarreraGameMode::RegistrarLlegadaJugador(AController* JugadorController)
 			JugadoresQueLlegaron.Add(JugadorController);
 			MiGameState->JugadoresLlegados = JugadoresQueLlegaron.Num();//Actualizamos la Cantidad
 		
+			ACarreraPlayerState* PS = JugadorController->GetPlayerState<ACarreraPlayerState>();
+			if (PS)
+			{
+				PS->FinalPosition = JugadoresQueLlegaron.Num();
+				
+				PS->FinishTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+				
+				PS->bFinishedRace = true;
+				
+				PS->OnRep_FinishedRace();
+			}
+			
 			//Definimos el mensaje segun el puesto
 			FString MensajePuesto;
 			if (JugadoresQueLlegaron.Num()==1)MensajePuesto=TEXT("¡Has Ganado - Primer Puesto!");
@@ -79,10 +109,5 @@ void ACarreraGameMode::FinalizarCarrera()
 	{
 		ACarreraPlayerController* PC = Cast<ACarreraPlayerController>(It->Get());
 		
-		//Si el jugador no esta en la lista de los jugadores que llegaron, significa que se le acabo el tiempo
-		if (PC && !JugadoresQueLlegaron.Contains(PC))
-		{
-			PC->Client_MostrarResultado(TEXT("Tiempo Terminado"));
-		}
 	}
 }

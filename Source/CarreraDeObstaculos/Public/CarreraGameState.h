@@ -30,6 +30,9 @@ public:
 	UPROPERTY(ReplicatedUsing="OnRep_EstadoActual", BlueprintReadOnly, Category="Estado")
 	ECarreraEstado EstadoActual;
 	
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Carrera")
+	int32 ConteoRegresivo =3;
+	
 	UFUNCTION()
 	void OnRep_EstadoActual();
 	

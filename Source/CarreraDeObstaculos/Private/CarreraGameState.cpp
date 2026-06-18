@@ -21,6 +21,7 @@ void ACarreraGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ACarreraGameState, TiempoRestante);
 	DOREPLIFETIME(ACarreraGameState, JugadoresLlegados);
 	DOREPLIFETIME(ACarreraGameState, EstadoActual);
+	DOREPLIFETIME(ACarreraGameState, ConteoRegresivo)
 }
 
 bool ACarreraGameState::PuedeMoverse() const
